@@ -1,3 +1,6 @@
+
+
+
 proc ircsplit str {
 	set res {}
 	if {[string index $str 0] eq ":"} {
@@ -14,16 +17,16 @@ proc ircsplit str {
 	}
 	return $res
 }
-
-set sockChan [socket irc.technet.xi.ht 6667]
+set sockChan [socket $::server $::port]
 fconfigure $sockChan -translation crlf -buffering line
-puts $sockChan "NICK foo"
-puts $sockChan "USER username * * :foo"
-puts $sockChan "PRIVMSG CT :hi"
+puts $sockChan "NICK $::botnick"
+puts $sockChan "USER $::realname * * :$::ident"
 while {![eof $sockChan]} {
 	set line [gets $sockChan]
 	puts ">> $line"
 	set lline [ircsplit $line]
+	set chan [lindex $lline 2]
+	set text [lindex $lline end]
 	switch -nocase -- [lindex $lline 1] {
 		PING {puts $sockChan "PONG :[lindex $lline 2]"}
 		001 {puts $sockChan "JOIN #test"}
