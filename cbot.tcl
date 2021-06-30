@@ -1,6 +1,3 @@
-
-
-
 proc ircsplit str {
 	set res {}
 	if {[string index $str 0] eq ":"} {
@@ -17,14 +14,14 @@ proc ircsplit str {
 	}
 	return $res
 }
-set sockChan [socket $::server $::port]
-fconfigure $sockChan -translation crlf -buffering line
-puts $sockChan "NICK $::botnick"
-puts $sockChan "USER $::realname * * :$::ident"
-while {![eof $sockChan]} {
+
+proc sockReadable {sockChan} {
+	if {[eof $sockChan]} {
+		close $sockChan
+	}
 	set line [gets $sockChan]
-	puts ">> $line"
 	set lline [ircsplit $line]
+	puts ">> $lline"
 	set chan [lindex $lline 2]
 	set text [lindex $lline end]
 	switch -nocase -- [lindex $lline 1] {
@@ -40,3 +37,10 @@ while {![eof $sockChan]} {
 		}
 	}
 }
+set sockChan [socket -async $::server $::port]
+fconfigure $sockChan -translation {auto crlf} -buffering line -blocking 0
+puts $sockChan "NICK $::botnick"
+puts $sockChan "USER $::ident * * :$::realname"
+fileevent $sockChan readable [list sockReadable $sockChan]
+
+# vwait forever -- don't use vwait in eggdrop
