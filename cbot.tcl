@@ -21,6 +21,7 @@ proc sockReadable {sockChan} {
 	}
 	set line [gets $sockChan]
 	set lline [ircsplit $line]
+	puts ">> $lline"
 	set chan [lindex $lline 2]
 	set text [lindex $lline end]
 	switch -nocase -- [lindex $lline 1] {
@@ -36,7 +37,7 @@ proc sockReadable {sockChan} {
 		}
 	}
 }
-set sockChan [socket $::server $::port]
+set sockChan [socket -async $::server $::port]
 fconfigure $sockChan -translation {auto crlf} -buffering line -blocking 0
 puts $sockChan "NICK $::botnick"
 puts $sockChan "USER $::ident * * :$::realname"
